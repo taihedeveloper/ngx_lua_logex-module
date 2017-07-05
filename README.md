@@ -18,7 +18,7 @@ lua_logex_level<br>
 配置段：http, server, location, location if<br>
 描述：设置能够输出到日志文件的最低级别，总共有5个级别，分别是：0-DEBUG, 1-TRACE, 2-NOTICE, 3-WARNING, 4-FATAL，缺省为NOTICE。
 
-#模块变量说明：
+# 模块变量说明：
 $logex_id<br>
 对于每个请求都会自动生成一个logex_id，便于追踪排查问题。
 
