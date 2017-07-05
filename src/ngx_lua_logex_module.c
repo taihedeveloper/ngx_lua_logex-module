@@ -8,9 +8,10 @@
 #include "ddebug.h"
 #include "ngx_lua_logex_file.h"
 #include "ngx_lua_logex_api.h"
+#include "ngx_lua_logex_variable.h"
 
+static ngx_int_t ngx_lua_logex_prepost_conf(ngx_conf_t* cf);
 static ngx_int_t ngx_lua_logex_post_conf(ngx_conf_t* cf);
-static void* ngx_lua_logex_create_main_conf(ngx_conf_t* cf);
 static void* ngx_lua_logex_create_loc_conf(ngx_conf_t* cf);
 static char* ngx_lua_logex_merge_loc_conf(ngx_conf_t* cf, void* parent, void* child);
 static ngx_int_t ngx_lua_logex_init_fd(ngx_conf_t* cf, ngx_lua_logex_loc_conf_t* llcf);
@@ -39,9 +40,9 @@ static ngx_command_t ngx_lua_logex_cmds[] = {
 };
 
 ngx_http_module_t ngx_lua_logex_module_ctx = {
-    NULL,                             /*  preconfiguration */
+    ngx_lua_logex_prepost_conf,       /*  preconfiguration */
     ngx_lua_logex_post_conf,          /*  postconfiguration */
-    ngx_lua_logex_create_main_conf,   /*  create main configuration */
+    NULL,                             /*  create main configuration */
     NULL,                             /*  init main configuration */
     NULL,                             /*  create server configuration */
     NULL,                             /*  merge server configuration */
@@ -64,20 +65,17 @@ ngx_module_t ngx_lua_logex_module = {
     NGX_MODULE_V1_PADDING
 };
 
+static ngx_int_t ngx_lua_logex_prepost_conf(ngx_conf_t* cf)
+{
+    return ngx_lua_logex_add_variables(cf);
+}
+
 static ngx_int_t ngx_lua_logex_post_conf(ngx_conf_t* cf)
 {
-    ngx_lua_logex_main_conf_t* lmcf;
-
-    //get logex_id variable
-    char* logexname = "logex_id";
-    size_t logexlen = strlen(logexname);
-
-    lmcf = ngx_http_conf_get_module_main_conf(cf, ngx_lua_logex_module);
-
-    lmcf->logexid_name.data = (u_char*)ngx_pcalloc(cf->pool, logexlen + 1);
-    ngx_memcpy(lmcf->logexid_name.data, logexname, logexlen);
-    lmcf->logexid_name.len = logexlen;
-    lmcf->logexid_hash = ngx_hash_key(lmcf->logexid_name.data, lmcf->logexid_name.len);
+    if (ngx_lua_logex_variables_init(cf) != NGX_OK)
+    {
+        return NGX_ERROR;
+    }
 
     //add current lua api into package by use ngx lua module, so use this module must dependent ngx lua module
     if (ngx_http_lua_add_package_preload(cf, "ngx.ext", ngx_lua_logex_inject_api) != NGX_OK)
@@ -86,13 +84,6 @@ static ngx_int_t ngx_lua_logex_post_conf(ngx_conf_t* cf)
     }
 
     return NGX_OK;
-}
-
-static void* ngx_lua_logex_create_main_conf(ngx_conf_t* cf)
-{
-    ngx_lua_logex_main_conf_t* lmcf;
-    lmcf = ngx_pcalloc(cf->pool, sizeof(ngx_lua_logex_main_conf_t));
-    return lmcf;
 }
 
 static void* ngx_lua_logex_create_loc_conf(ngx_conf_t *cf)

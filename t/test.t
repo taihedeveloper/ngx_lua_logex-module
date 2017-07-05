@@ -1,5 +1,5 @@
 #user  nobody;
-worker_processes  1;
+worker_processes 1;
 
 #error_log  logs/error.log;
 #error_log  logs/error.log  notice;
@@ -14,6 +14,12 @@ events {
 http {
     include       mime.types;
     default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "mylogexid:$logex_id"';
+
+    access_log  logs/access.log  main;
 
     sendfile        on;
     keepalive_timeout  65;
@@ -32,7 +38,7 @@ http {
 
         location /foo {
 
-            lua_logex_file_path /home/work/xxx/logs/location_ex.log;
+            lua_logex_file_path logs/location_ex.log;
             lua_logex_level 2;
 
             default_type text/css;

@@ -11,7 +11,6 @@
 #include "ngx_http_lua_api.h"
 
 typedef struct ngx_lua_logex_s ngx_lua_logex_t;
-typedef struct ngx_lua_logex_main_conf_s ngx_lua_logex_main_conf_t;
 typedef struct ngx_lua_logex_loc_conf_s ngx_lua_logex_loc_conf_t;
 
 struct ngx_lua_logex_s
@@ -21,12 +20,6 @@ struct ngx_lua_logex_s
     int32_t last_hour;
     int32_t log_fd;
     int32_t log_fd_wf;
-};
-
-struct ngx_lua_logex_main_conf_s
-{
-    ngx_str_t logexid_name;
-    ngx_uint_t logexid_hash;
 };
 
 struct ngx_lua_logex_loc_conf_s

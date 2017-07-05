@@ -8,6 +8,7 @@
 #include "ddebug.h"
 #include "ngx_lua_logex_api.h"
 #include "ngx_lua_logex_file.h"
+#include "ngx_lua_logex_variable.h"
 
 ngx_module_t ngx_lua_logex_module;
 
@@ -17,10 +18,9 @@ static int32_t ngx_http_lua_logex(lua_State* L)
     u_char* filename;
     LUA_INTEGER line;
     u_char* fmt;
-    uint32_t logid;
+    uint32_t logex_id;
     ngx_http_request_t* r;
     ngx_lua_logex_loc_conf_t* llcf;
-    ngx_lua_logex_main_conf_t* lmcf;
 
     level = luaL_checkinteger(L, 1);
     filename = (u_char*)luaL_checklstring(L, 2, NULL);
@@ -28,16 +28,10 @@ static int32_t ngx_http_lua_logex(lua_State* L)
     fmt = (u_char*)luaL_checklstring(L, 4, NULL);
     r = ngx_http_lua_get_request(L);
 
-    logid = 0;
-    lmcf = ngx_http_get_module_main_conf(r, ngx_lua_logex_module);
-    ngx_http_variable_value_t* v = ngx_http_get_variable(r->main, &lmcf->logexid_name, lmcf->logexid_hash);
-    if (v != NULL && !v->not_found)
-    {
-        logid = ngx_atoi(v->data, v->len);
-    }
+    logex_id = ngx_lua_logex_get_logex_id(r);
 
     llcf = ngx_http_get_module_loc_conf(r, ngx_lua_logex_module);
-    ngx_lua_logex_write(level, logid, (const char*)filename, line, (const char*)fmt, llcf->logex);
+    ngx_lua_logex_write(level, logex_id, (const char*)filename, line, (const char*)fmt, llcf->logex);
     return 0;
 }
 
